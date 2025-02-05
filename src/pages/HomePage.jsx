@@ -1,7 +1,7 @@
 function HomePage() {
   return (
     <>
-      <h1>hello admin dashboard</h1>
+      <h1 className="text-4xl">hello admin dashboard</h1>
     </>
   );
 }
