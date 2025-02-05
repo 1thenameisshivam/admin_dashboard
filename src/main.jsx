@@ -2,10 +2,21 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 import { router } from "./router";
+import "antd/dist/reset.css";
 import "./index.css";
+import { ConfigProvider } from "antd";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: "#F65F42",
+          colorLink: "#F65F42",
+        },
+      }}
+    >
+      <RouterProvider router={router} />
+    </ConfigProvider>
   </StrictMode>
 );
