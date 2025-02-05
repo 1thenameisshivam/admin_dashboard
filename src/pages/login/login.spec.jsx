@@ -1,10 +1,16 @@
 import { it, describe, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import LoginPage from "./LoginPage";
 
 describe("Login Page", () => {
+  const queryClient = new QueryClient();
   it("Should render with required fields", () => {
-    render(<LoginPage />);
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LoginPage />
+      </QueryClientProvider>
+    );
     // getBy -> throw an error
     // findBy -> Async
     // queryBy -> return null

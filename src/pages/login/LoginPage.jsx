@@ -1,9 +1,57 @@
-/* eslint-disable react/no-unknown-property */
 import { LockFilled, LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Card, Checkbox, Form, Input, Layout, Space } from "antd";
+import {
+  Alert,
+  Button,
+  Card,
+  Checkbox,
+  Form,
+  Input,
+  Layout,
+  Space,
+} from "antd";
 import { Logo } from "../../components/icons/Logo";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { login, logOut, self } from "../../http/api";
+import { useAuthStore } from "../../store";
 
 const LoginPage = () => {
+  const { setUser, logout } = useAuthStore();
+  const loginUser = async (userData) => {
+    const { data } = await login(userData);
+    return data;
+  };
+  const getSelf = async () => {
+    const { data } = await self();
+    return data;
+  };
+  const { refetch } = useQuery({
+    queryKey: ["self"],
+    queryFn: getSelf,
+    enabled: false,
+  });
+
+  const { mutate: logoutMutate } = useMutation({
+    mutationKey: ["logout"],
+    mutationFn: logOut,
+    onSuccess: async () => {
+      logout();
+      return;
+    },
+  });
+
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationKey: ["login"],
+    mutationFn: loginUser,
+    onSuccess: async () => {
+      const { data } = await refetch();
+      if (data.user.role == "customer") {
+        logoutMutate();
+        return;
+      }
+      setUser(data.user);
+    },
+  });
+
   return (
     <>
       <Layout className="h-[100vh] flex justify-center items-center">
@@ -20,7 +68,19 @@ const LoginPage = () => {
               </Space>
             }
           >
-            <Form initialValues={{ remember: true }}>
+            <Form
+              onFinish={(value) => {
+                mutate({ email: value.email, password: value.password });
+              }}
+              initialValues={{ remember: true }}
+            >
+              {isError && (
+                <Alert
+                  type="error"
+                  message={error?.response?.data?.errors[0].message}
+                  style={{ marginBottom: 20 }}
+                />
+              )}
               <Form.Item
                 name={"email"}
                 rules={[
@@ -60,7 +120,12 @@ const LoginPage = () => {
               </div>
 
               <Form.Item>
-                <Button type={"primary"} htmlType="submit" className="w-full">
+                <Button
+                  loading={isPending}
+                  type={"primary"}
+                  htmlType="submit"
+                  className="w-full"
+                >
                   Log in
                 </Button>
               </Form.Item>
