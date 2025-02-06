@@ -1,12 +1,13 @@
 import { PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Breadcrumb, Button, Drawer, Space, Table } from "antd";
+import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { Link } from "react-router";
 import { getUsers } from "../../http/api";
 import { useAuthStore } from "../../store";
 import { Navigate } from "react-router";
 import { UserFilter } from "./UserFilter";
 import { useState } from "react";
+import { UserForm } from "./form/UserForm";
 
 export const UsersPage = () => {
   const { user } = useAuthStore();
@@ -21,6 +22,10 @@ export const UsersPage = () => {
   if (user.role !== "admin") {
     return <Navigate to={"/"}></Navigate>;
   }
+  const {
+    token: { colorBgLayout },
+  } = theme.useToken();
+
   return (
     <>
       <Space direction="vertical" size={16} className="w-full">
@@ -57,9 +62,11 @@ export const UsersPage = () => {
         width={720}
         onClose={() => setOpen(false)}
         open={open}
+        destroyOnClose={true}
         styles={{
           body: {
             paddingBottom: 80,
+            background: colorBgLayout,
           },
         }}
         extra={
@@ -70,7 +77,11 @@ export const UsersPage = () => {
             </Button>
           </Space>
         }
-      ></Drawer>
+      >
+        <Form layout="vertical">
+          <UserForm />
+        </Form>
+      </Drawer>
     </>
   );
 };
