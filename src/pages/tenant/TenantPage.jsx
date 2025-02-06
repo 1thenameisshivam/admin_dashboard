@@ -1,14 +1,16 @@
 import { PlusOutlined, RightOutlined } from "@ant-design/icons";
-import { Breadcrumb, Button, Drawer, Space, Table, theme } from "antd";
+import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { Link } from "react-router";
 import { TenantFilter } from "./TenantFilter";
-import { useQuery } from "@tanstack/react-query";
-import { getTenant } from "../../http/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createTenant, getTenant } from "../../http/api";
 import { useState } from "react";
+import { TenantForm } from "./form/TenantForm";
 
 export const TenantPage = () => {
   const [open, setOpen] = useState(false);
-  // const [form] = Form.useForm();
+  const [form] = Form.useForm();
+  const queryClient = useQueryClient();
   const { data: tenant } = useQuery({
     queryKey: ["tenant"],
     queryFn: () =>
@@ -16,6 +18,20 @@ export const TenantPage = () => {
         return res.data;
       }),
   });
+
+  const { mutate } = useMutation({
+    mutationKey: ["user"],
+    mutationFn: (userData) => createTenant(userData),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["tenant"] });
+      form.resetFields();
+      setOpen(false);
+    },
+  });
+  const onSubmitForm = async () => {
+    await form.validateFields();
+    mutate(form.getFieldValue());
+  };
   const {
     token: { colorBgLayout },
   } = theme.useToken();
@@ -66,14 +82,15 @@ export const TenantPage = () => {
         extra={
           <Space>
             <Button onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="primary">Submit</Button>
+            <Button onClick={onSubmitForm} type="primary">
+              Submit
+            </Button>
           </Space>
         }
       >
-        {/* <Form form={form} layout="vertical">
-          <UserForm />
-        </Form> */}
-        <h1>jhff</h1>
+        <Form form={form} layout="vertical">
+          <TenantForm />
+        </Form>
       </Drawer>
     </>
   );

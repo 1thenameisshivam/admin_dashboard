@@ -6,3 +6,4 @@ export const logOut = () => api.post("/auth/logout");
 export const getUsers = () => api.get("/user");
 export const getTenant = () => api.get("/tenant");
 export const cerateUser = (userData) => api.post("/user", userData);
+export const createTenant = (tenantData) => api.post("/tenant", tenantData);
