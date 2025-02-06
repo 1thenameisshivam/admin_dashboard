@@ -1,8 +1,8 @@
 import { PlusOutlined, RightOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { Link } from "react-router";
-import { getUsers } from "../../http/api";
+import { cerateUser, getUsers } from "../../http/api";
 import { useAuthStore } from "../../store";
 import { Navigate } from "react-router";
 import { UserFilter } from "./UserFilter";
@@ -12,11 +12,22 @@ import { UserForm } from "./form/UserForm";
 export const UsersPage = () => {
   const { user } = useAuthStore();
   const [open, setOpen] = useState(false);
+  const [form] = Form.useForm();
+  const queryClient = useQueryClient();
   // eslint-disable-next-line no-unused-vars
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       return getUsers().then((res) => res.data.users);
+    },
+  });
+  const { mutate } = useMutation({
+    mutationKey: ["user"],
+    mutationFn: (userData) => cerateUser(userData),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      form.resetFields();
+      setOpen(false);
     },
   });
   if (user.role !== "admin") {
@@ -26,6 +37,10 @@ export const UsersPage = () => {
     token: { colorBgLayout },
   } = theme.useToken();
 
+  const onSubmitForm = async () => {
+    await form.validateFields();
+    mutate(form.getFieldValue());
+  };
   return (
     <>
       <Space direction="vertical" size={16} className="w-full">
@@ -72,13 +87,13 @@ export const UsersPage = () => {
         extra={
           <Space>
             <Button onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={() => setOpen(true)} type="primary">
+            <Button onClick={onSubmitForm} type="primary">
               Submit
             </Button>
           </Space>
         }
       >
-        <Form layout="vertical">
+        <Form form={form} layout="vertical">
           <UserForm />
         </Form>
       </Drawer>

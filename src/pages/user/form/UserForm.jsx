@@ -80,8 +80,8 @@ export const UserForm = () => {
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
-                  label={"Id"}
-                  name={"id"}
+                  label={"Role"}
+                  name={"role"}
                   rules={[
                     {
                       required: true,
