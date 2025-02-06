@@ -44,34 +44,45 @@ export const Dashboard = () => {
     return <Navigate to={"auth/login"} replace={true} />;
   }
 
-  const items = [
-    {
-      key: "/",
-      icon: <HomeFilled />,
-      label: <NavLink to={"/"}>Home</NavLink>,
-    },
-    {
-      key: "/users",
-      icon: <UserOutlined />,
-      label: <NavLink to={"/users"}>Users</NavLink>,
-    },
-    {
-      key: "/resturants",
-      icon: <ShopFilled />,
-      label: <NavLink to={"/resturants"}>Resturants</NavLink>,
-    },
-    {
-      key: "/products",
-      icon: <ProductFilled />,
-      label: <NavLink to={"/products"}>Products</NavLink>,
-    },
-    {
-      key: "/promos",
-      icon: <GiftFilled />,
-      label: <NavLink to={"/promos"}>Promos</NavLink>,
-    },
-  ];
+  const getMenuItems = (role) => {
+    const baseItems = [
+      {
+        key: "/",
+        icon: <HomeFilled />,
+        label: <NavLink to={"/"}>Home</NavLink>,
+        priorty: 0,
+      },
+      {
+        key: "/resturants",
+        icon: <ShopFilled />,
+        label: <NavLink to={"/resturants"}>Resturants</NavLink>,
+        priorty: 2,
+      },
+      {
+        key: "/products",
+        icon: <ProductFilled />,
+        label: <NavLink to={"/products"}>Products</NavLink>,
+        priorty: 3,
+      },
+      {
+        key: "/promos",
+        icon: <GiftFilled />,
+        label: <NavLink to={"/promos"}>Promos</NavLink>,
+        priorty: 4,
+      },
+    ];
+    if (role == "admin") {
+      baseItems.push({
+        key: "/users",
+        icon: <UserOutlined />,
+        label: <NavLink to={"/users"}>Users</NavLink>,
+        priorty: 1,
+      });
+    }
+    return baseItems.sort((a, b) => a.priorty - b.priorty);
+  };
 
+  const items = getMenuItems(user.role);
   return (
     <div>
       <Layout
@@ -105,7 +116,9 @@ export const Dashboard = () => {
           >
             <Flex align="center" justify="space-between">
               <Badge
-                text={user.role == "admin" ? "You are admin" : user.tenant.name}
+                text={
+                  user.role == "admin" ? "You are admin" : user?.tenant?.name
+                }
                 status="success"
               />
               <Space size={16}>

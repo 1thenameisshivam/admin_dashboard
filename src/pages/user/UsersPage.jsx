@@ -3,14 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { Breadcrumb, Space, Table } from "antd";
 import { Link } from "react-router";
 import { getUsers } from "../../http/api";
+import { useAuthStore } from "../../store";
+import { Navigate } from "react-router";
 
 export const UsersPage = () => {
+  const { user } = useAuthStore();
+  // eslint-disable-next-line no-unused-vars
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       return getUsers().then((res) => res.data.users);
     },
   });
+  if (user.role !== "admin") {
+    return <Navigate to={"/"}></Navigate>;
+  }
   return (
     <>
       <Space direction="vertical" size={16} className="w-full">
