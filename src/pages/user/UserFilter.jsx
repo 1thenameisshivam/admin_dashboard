@@ -1,8 +1,7 @@
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Input, Row, Select } from "antd";
+import { Card, Col, Input, Row, Select } from "antd";
 
 // eslint-disable-next-line react/prop-types
-export const UserFilter = ({ onFilterChange }) => {
+export const UserFilter = ({ onFilterChange, children }) => {
   return (
     <Card>
       <Row>
@@ -40,9 +39,7 @@ export const UserFilter = ({ onFilterChange }) => {
           </Row>
         </Col>
         <Col span={8} style={{ display: "flex", justifyContent: "end" }}>
-          <Button type="primary" icon={<PlusOutlined />}>
-            Add User
-          </Button>
+          {children}
         </Col>
       </Row>
     </Card>

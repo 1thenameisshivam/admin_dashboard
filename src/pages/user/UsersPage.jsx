@@ -1,14 +1,16 @@
-import { RightOutlined } from "@ant-design/icons";
+import { PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Breadcrumb, Space, Table } from "antd";
+import { Breadcrumb, Button, Drawer, Space, Table } from "antd";
 import { Link } from "react-router";
 import { getUsers } from "../../http/api";
 import { useAuthStore } from "../../store";
 import { Navigate } from "react-router";
 import { UserFilter } from "./UserFilter";
+import { useState } from "react";
 
 export const UsersPage = () => {
   const { user } = useAuthStore();
+  const [open, setOpen] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["users"],
@@ -37,11 +39,38 @@ export const UsersPage = () => {
           onFilterChange={(name, value) => {
             console.log(value);
           }}
-        />
+        >
+          <Button
+            onClick={() => setOpen(true)}
+            type="primary"
+            icon={<PlusOutlined />}
+          >
+            Add User
+          </Button>
+        </UserFilter>
         <div>
           <Table dataSource={data} columns={columns} rowKey={"id"} />;
         </div>
       </Space>
+      <Drawer
+        title="Create a new user"
+        width={720}
+        onClose={() => setOpen(false)}
+        open={open}
+        styles={{
+          body: {
+            paddingBottom: 80,
+          },
+        }}
+        extra={
+          <Space>
+            <Button onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={() => setOpen(true)} type="primary">
+              Submit
+            </Button>
+          </Space>
+        }
+      ></Drawer>
     </>
   );
 };
