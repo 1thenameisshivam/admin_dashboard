@@ -26,9 +26,8 @@ import { Logo } from "../components/icons/Logo";
 import { useMutation } from "@tanstack/react-query";
 import { logOut } from "../http/api";
 export const Dashboard = () => {
-  const { user } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { mutate: logoutMutate } = useMutation({
     mutationKey: ["logout"],
     mutationFn: logOut,
@@ -105,7 +104,10 @@ export const Dashboard = () => {
             }}
           >
             <Flex align="center" justify="space-between">
-              <Badge text="global user" status="success" />
+              <Badge
+                text={user.role == "admin" ? "You are admin" : user.tenant.name}
+                status="success"
+              />
               <Space size={16}>
                 <Badge dot={true}>
                   <BellFilled />
@@ -136,7 +138,7 @@ export const Dashboard = () => {
           </Header>
           <Content
             style={{
-              margin: "0 16px",
+              margin: "16px",
             }}
           >
             <Outlet />
