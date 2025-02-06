@@ -4,6 +4,7 @@ import LoginPage from "./pages/login/LoginPage";
 import { Dashboard } from "./layout/Dashboard";
 import NonAuth from "./layout/NonAuth";
 import { Root } from "./layout/Root";
+import { UsersPage } from "./pages/user/UsersPage";
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +18,10 @@ export const router = createBrowserRouter([
           {
             path: "",
             element: <HomePage />,
+          },
+          {
+            path: "/users",
+            element: <UsersPage />,
           },
         ],
       },
