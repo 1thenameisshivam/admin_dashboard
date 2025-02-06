@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { getUsers } from "../../http/api";
 import { useAuthStore } from "../../store";
 import { Navigate } from "react-router";
+import { UserFilter } from "./UserFilter";
 
 export const UsersPage = () => {
   const { user } = useAuthStore();
@@ -32,6 +33,7 @@ export const UsersPage = () => {
             },
           ]}
         />
+        <UserFilter />
         <div>
           <Table dataSource={data} columns={columns} />;
         </div>
