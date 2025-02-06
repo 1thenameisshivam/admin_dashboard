@@ -33,9 +33,13 @@ export const UsersPage = () => {
             },
           ]}
         />
-        <UserFilter />
+        <UserFilter
+          onFilterChange={(name, value) => {
+            console.log(value);
+          }}
+        />
         <div>
-          <Table dataSource={data} columns={columns} />;
+          <Table dataSource={data} columns={columns} rowKey={"id"} />;
         </div>
       </Space>
     </>

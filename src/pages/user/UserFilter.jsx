@@ -1,17 +1,22 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Input, Row, Select } from "antd";
 
-export const UserFilter = () => {
+// eslint-disable-next-line react/prop-types
+export const UserFilter = ({ onFilterChange }) => {
   return (
     <Card>
       <Row>
         <Col span={16}>
           <Row gutter={16}>
             <Col span={8}>
-              <Input.Search placeholder="search" />
+              <Input.Search
+                onChange={(e) => onFilterChange("SearchQuery", e.target.value)}
+                placeholder="search"
+              />
             </Col>
             <Col span={4}>
               <Select
+                onChange={(e) => onFilterChange("RoleFilter", e)}
                 className="w-full"
                 allowClear="true"
                 placeholder="Select Role"
@@ -22,7 +27,12 @@ export const UserFilter = () => {
               </Select>
             </Col>
             <Col span={4}>
-              <Select className="w-full" allowClear="true" placeholder="Status">
+              <Select
+                onChange={(e) => onFilterChange("StatusFilter", e)}
+                className="w-full"
+                allowClear="true"
+                placeholder="Status"
+              >
                 <Select.Option value="ban">Ban</Select.Option>
                 <Select.Option value="active">Active</Select.Option>
               </Select>
