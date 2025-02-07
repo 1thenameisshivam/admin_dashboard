@@ -1,6 +1,25 @@
-import { PlusOutlined, RightOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  Breadcrumb,
+  Button,
+  Drawer,
+  Flex,
+  Form,
+  Space,
+  Spin,
+  Table,
+  theme,
+} from "antd";
 import { Link } from "react-router";
 import { cerateUser, getUsers } from "../../http/api";
 import { useAuthStore } from "../../store";
@@ -19,12 +38,13 @@ export const UsersPage = () => {
   });
   const queryClient = useQueryClient();
   // eslint-disable-next-line no-unused-vars
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isFetching, isError, error } = useQuery({
     queryKey: ["users", queryParams],
     queryFn: async () => {
       const query = `perPage=${queryParams.perPage}&currentPage=${queryParams.currentPage}`;
       return getUsers(query).then((res) => res.data.users);
     },
+    placeholderData: keepPreviousData,
   });
   const { mutate } = useMutation({
     mutationKey: ["user"],
@@ -49,17 +69,21 @@ export const UsersPage = () => {
   return (
     <>
       <Space direction="vertical" size={16} className="w-full">
-        <Breadcrumb
-          separator={<RightOutlined />}
-          items={[
-            {
-              title: <Link to={"/"}>Home</Link>,
-            },
-            {
-              title: "Users",
-            },
-          ]}
-        />
+        <Flex justify="space-between">
+          <Breadcrumb
+            separator={<RightOutlined />}
+            items={[
+              {
+                title: <Link to={"/"}>Home</Link>,
+              },
+              {
+                title: "Users",
+              },
+            ]}
+          />
+          {isFetching && <Spin indicator={<LoadingOutlined spin />} />}
+        </Flex>
+
         <UserFilter
           onFilterChange={(name, value) => {
             console.log(value);
