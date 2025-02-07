@@ -1,17 +1,16 @@
 /* eslint-disable react/prop-types */
-import { Card, Col, Input, Row } from "antd";
+import { Card, Col, Form, Input, Row } from "antd";
 
-export const TenantFilter = ({ onFilterChange, children }) => {
+export const TenantFilter = ({ children }) => {
   return (
     <Card>
       <Row>
         <Col span={16}>
           <Row gutter={16}>
             <Col span={8}>
-              <Input.Search
-                onChange={(e) => onFilterChange("SearchQuery", e.target.value)}
-                placeholder="search"
-              />
+              <Form.Item name={"q"}>
+                <Input.Search placeholder="search" />
+              </Form.Item>
             </Col>
           </Row>
         </Col>

@@ -2,22 +2,54 @@ import { PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { Link } from "react-router";
 import { TenantFilter } from "./TenantFilter";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { createTenant, getTenant } from "../../http/api";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TenantForm } from "./form/TenantForm";
+import { debounce } from "lodash";
 
 export const TenantPage = () => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
-  const { data: tenant } = useQuery({
-    queryKey: ["tenant"],
-    queryFn: () =>
-      getTenant().then((res) => {
-        return res.data;
-      }),
+  const [formFilter] = Form.useForm();
+  const [queryParams, setQuserParams] = useState({
+    perPage: 6,
+    currentPage: 1,
+    q: "",
   });
+  const { data: tenant } = useQuery({
+    queryKey: ["tenant", queryParams],
+    queryFn: async () => {
+      const query = `perPage=${queryParams.perPage}&currentPage=${queryParams.currentPage}&q=${queryParams.q}`;
+      return getTenant(query).then((res) => res.data);
+    },
+    placeholderData: keepPreviousData,
+  });
+
+  const debouncedUpdate = useMemo(() => {
+    return debounce((value) => {
+      setQuserParams((prev) => ({ ...prev, q: value }));
+    }, 500);
+  });
+  const searchFilter = (value) => {
+    const changedField = value
+      .map((item) => ({
+        [item.name[0]]: item.value,
+      }))
+      .reduce((acc, item) => ({ ...acc, ...item }), {});
+
+    if ("q" in changedField) {
+      debouncedUpdate(changedField.q);
+    } else {
+      setQuserParams((prev) => ({ ...prev, ...changedField }));
+    }
+  };
 
   const { mutate } = useMutation({
     mutationKey: ["user"],
@@ -50,21 +82,35 @@ export const TenantPage = () => {
             },
           ]}
         />
-        <TenantFilter
-          onFilterChange={(name, value) => {
-            console.log(value);
-          }}
-        >
-          <Button
-            onClick={() => setOpen(true)}
-            type="primary"
-            icon={<PlusOutlined />}
+        <Form form={formFilter} onFieldsChange={(value) => searchFilter(value)}>
+          <TenantFilter
+            onFilterChange={(name, value) => {
+              console.log(value);
+            }}
           >
-            Add Resturant
-          </Button>
-        </TenantFilter>
+            <Button
+              onClick={() => setOpen(true)}
+              type="primary"
+              icon={<PlusOutlined />}
+            >
+              Add Resturant
+            </Button>
+          </TenantFilter>
+        </Form>
         <div>
-          <Table dataSource={tenant} columns={columns} rowKey={"id"} />
+          <Table
+            pagination={{
+              total: tenant?.total,
+              pageSize: queryParams.perPage,
+              current: queryParams.currentPage,
+              onChange: (page) => {
+                setQuserParams((prev) => ({ ...prev, currentPage: page }));
+              },
+            }}
+            dataSource={tenant?.data}
+            columns={columns}
+            rowKey={"id"}
+          />
         </div>
       </Space>
       <Drawer
