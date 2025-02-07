@@ -25,9 +25,11 @@ import { NavLink } from "react-router";
 import { Logo } from "../components/icons/Logo";
 import { useMutation } from "@tanstack/react-query";
 import { logOut } from "../http/api";
+import { useLocation } from "react-router";
 export const Dashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuthStore();
+  const location = useLocation();
   const { mutate: logoutMutate } = useMutation({
     mutationKey: ["logout"],
     mutationFn: logOut,
@@ -39,9 +41,13 @@ export const Dashboard = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-
   if (user == null) {
-    return <Navigate to={"auth/login"} replace={true} />;
+    return (
+      <Navigate
+        to={`auth/login?returnTo=${location.pathname}`}
+        replace={true}
+      />
+    );
   }
 
   const getMenuItems = (role) => {

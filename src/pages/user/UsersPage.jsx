@@ -61,7 +61,7 @@ export const UsersPage = () => {
   });
   const debouncedUpdate = useMemo(() => {
     return debounce((value) => {
-      setQuserParams((prev) => ({ ...prev, q: value }));
+      setQuserParams((prev) => ({ ...prev, q: value, currentPage: 1 }));
     }, 500);
   });
   const searchFilter = (value) => {
@@ -74,7 +74,7 @@ export const UsersPage = () => {
     if ("q" in changedField) {
       debouncedUpdate(changedField.q);
     } else {
-      setQuserParams((prev) => ({ ...prev, ...changedField }));
+      setQuserParams((prev) => ({ ...prev, ...changedField, currentPage: 1 }));
     }
   };
 
@@ -126,6 +126,9 @@ export const UsersPage = () => {
               current: queryParams.currentPage,
               onChange: (page) => {
                 setQuserParams((prev) => ({ ...prev, currentPage: page }));
+              },
+              showTotal: (total, range) => {
+                return `Showing${range[0]}-${range[1]} of ${total} items`;
               },
             }}
             dataSource={data?.data}
