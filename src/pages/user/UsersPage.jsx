@@ -25,23 +25,27 @@ import { cerateUser, getUsers } from "../../http/api";
 import { useAuthStore } from "../../store";
 import { Navigate } from "react-router";
 import { UserFilter } from "./UserFilter";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { UserForm } from "./form/UserForm";
+import { debounce } from "lodash";
 
 export const UsersPage = () => {
   const { user } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
+  const [formFilter] = Form.useForm();
   const [queryParams, setQuserParams] = useState({
     perPage: 6,
     currentPage: 1,
+    q: "",
+    role: "",
   });
   const queryClient = useQueryClient();
   // eslint-disable-next-line no-unused-vars
   const { data, isFetching, isError, error } = useQuery({
     queryKey: ["users", queryParams],
     queryFn: async () => {
-      const query = `perPage=${queryParams.perPage}&currentPage=${queryParams.currentPage}`;
+      const query = `perPage=${queryParams.perPage}&currentPage=${queryParams.currentPage}&q=${queryParams.q}&role=${queryParams.role}`;
       return getUsers(query).then((res) => res.data.users);
     },
     placeholderData: keepPreviousData,
@@ -55,6 +59,25 @@ export const UsersPage = () => {
       setOpen(false);
     },
   });
+  const debouncedUpdate = useMemo(() => {
+    return debounce((value) => {
+      setQuserParams((prev) => ({ ...prev, q: value }));
+    }, 1000);
+  });
+  const searchFilter = (value) => {
+    const changedField = value
+      .map((item) => ({
+        [item.name[0]]: item.value,
+      }))
+      .reduce((acc, item) => ({ ...acc, ...item }), {});
+
+    if ("q" in changedField) {
+      debouncedUpdate(changedField.q);
+    } else {
+      setQuserParams((prev) => ({ ...prev, ...changedField }));
+    }
+  };
+
   if (user.role !== "admin") {
     return <Navigate to={"/"}></Navigate>;
   }
@@ -83,20 +106,18 @@ export const UsersPage = () => {
           />
           {isFetching && <Spin indicator={<LoadingOutlined spin />} />}
         </Flex>
+        <Form form={formFilter} onFieldsChange={(value) => searchFilter(value)}>
+          <UserFilter>
+            <Button
+              onClick={() => setOpen(true)}
+              type="primary"
+              icon={<PlusOutlined />}
+            >
+              Add User
+            </Button>
+          </UserFilter>
+        </Form>
 
-        <UserFilter
-          onFilterChange={(name, value) => {
-            console.log(value);
-          }}
-        >
-          <Button
-            onClick={() => setOpen(true)}
-            type="primary"
-            icon={<PlusOutlined />}
-          >
-            Add User
-          </Button>
-        </UserFilter>
         <div>
           <Table
             pagination={{
