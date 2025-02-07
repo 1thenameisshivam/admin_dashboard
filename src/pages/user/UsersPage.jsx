@@ -62,7 +62,7 @@ export const UsersPage = () => {
   const debouncedUpdate = useMemo(() => {
     return debounce((value) => {
       setQuserParams((prev) => ({ ...prev, q: value }));
-    }, 1000);
+    }, 500);
   });
   const searchFilter = (value) => {
     const changedField = value
@@ -190,5 +190,15 @@ const columns = [
     title: "Role",
     dataIndex: "role",
     key: "role",
+  },
+  {
+    title: "Resturant",
+    dataIndex: "tenant",
+    key: "tenant",
+    render: (text, record) => {
+      {
+        return record.tenant?.name;
+      }
+    },
   },
 ];
