@@ -59,12 +59,6 @@ export const Dashboard = () => {
         priorty: 0,
       },
       {
-        key: "/resturants",
-        icon: <ShopFilled />,
-        label: <NavLink to={"/resturants"}>Resturants</NavLink>,
-        priorty: 2,
-      },
-      {
         key: "/products",
         icon: <ProductFilled />,
         label: <NavLink to={"/products"}>Products</NavLink>,
@@ -83,6 +77,12 @@ export const Dashboard = () => {
         icon: <UserOutlined />,
         label: <NavLink to={"/users"}>Users</NavLink>,
         priorty: 1,
+      });
+      baseItems.push({
+        key: "/resturants",
+        icon: <ShopFilled />,
+        label: <NavLink to={"/resturants"}>Resturants</NavLink>,
+        priorty: 2,
       });
     }
     return baseItems.sort((a, b) => a.priorty - b.priorty);
