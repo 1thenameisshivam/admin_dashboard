@@ -13,12 +13,17 @@ export const UsersPage = () => {
   const { user } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
+  const [queryParams, setQuserParams] = useState({
+    perPage: 6,
+    currentPage: 1,
+  });
   const queryClient = useQueryClient();
   // eslint-disable-next-line no-unused-vars
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["users"],
+    queryKey: ["users", queryParams],
     queryFn: async () => {
-      return getUsers().then((res) => res.data.users);
+      const query = `perPage=${queryParams.perPage}&currentPage=${queryParams.currentPage}`;
+      return getUsers(query).then((res) => res.data.users);
     },
   });
   const { mutate } = useMutation({
@@ -69,7 +74,19 @@ export const UsersPage = () => {
           </Button>
         </UserFilter>
         <div>
-          <Table dataSource={data} columns={columns} rowKey={"id"} />;
+          <Table
+            pagination={{
+              total: data?.total,
+              pageSize: queryParams.perPage,
+              current: queryParams.currentPage,
+              onChange: (page) => {
+                setQuserParams((prev) => ({ ...prev, currentPage: page }));
+              },
+            }}
+            dataSource={data?.data}
+            columns={columns}
+            rowKey={"id"}
+          />
         </div>
       </Space>
       <Drawer

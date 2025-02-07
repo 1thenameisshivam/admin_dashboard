@@ -64,7 +64,7 @@ export const TenantPage = () => {
           </Button>
         </TenantFilter>
         <div>
-          <Table dataSource={tenant} columns={columns} rowKey={"id"} />;
+          <Table dataSource={tenant} columns={columns} rowKey={"id"} />
         </div>
       </Space>
       <Drawer
