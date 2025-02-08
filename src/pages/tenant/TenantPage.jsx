@@ -8,8 +8,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createTenant, getTenant } from "../../http/api";
-import { useMemo, useState } from "react";
+import { createTenant, getTenant, updateTenant } from "../../http/api";
+import { useEffect, useMemo, useState } from "react";
 import { TenantForm } from "./form/TenantForm";
 import { debounce } from "lodash";
 
@@ -18,13 +18,20 @@ export const TenantPage = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const [formFilter] = Form.useForm();
+  const [editTenant, setEditTenant] = useState(null);
   const [queryParams, setQuserParams] = useState({
     perPage: 6,
     currentPage: 1,
     q: "",
   });
+  useEffect(() => {
+    if (editTenant) {
+      setOpen(true);
+      form.setFieldsValue(editTenant);
+    }
+  }, [editTenant]);
   const { data: tenant } = useQuery({
-    queryKey: ["tenant", queryParams],
+    queryKey: ["tenants", queryParams],
     queryFn: async () => {
       const query = `perPage=${queryParams.perPage}&currentPage=${queryParams.currentPage}&q=${queryParams.q}`;
       return getTenant(query).then((res) => res.data);
@@ -52,18 +59,36 @@ export const TenantPage = () => {
   };
 
   const { mutate } = useMutation({
-    mutationKey: ["user"],
+    mutationKey: ["tenant"],
     mutationFn: (userData) => createTenant(userData),
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["tenant"] });
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      form.resetFields();
+      setOpen(false);
+    },
+  });
+
+  const { mutate: updateMutation } = useMutation({
+    mutationKey: ["update-tenant"],
+    mutationFn: (userId) => updateTenant(userId, form.getFieldValue()),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
       form.resetFields();
       setOpen(false);
     },
   });
   const onSubmitForm = async () => {
-    await form.validateFields();
-    mutate(form.getFieldValue());
+    const editMode = !!editTenant;
+    if (editMode) {
+      updateMutation(editTenant.id);
+    } else {
+      await form.validateFields();
+      mutate(form.getFieldValue());
+    }
+    setEditTenant(null);
+    setOpen(false);
   };
+
   const {
     token: { colorBgLayout },
   } = theme.useToken();
@@ -111,15 +136,32 @@ export const TenantPage = () => {
               },
             }}
             dataSource={tenant?.data}
-            columns={columns}
+            columns={[
+              ...columns,
+              {
+                title: "Action",
+                key: "action",
+                render: (text, record) => (
+                  <Space size="middle">
+                    <Button onClick={() => setEditTenant(record)} type="link">
+                      Edit
+                    </Button>
+                  </Space>
+                ),
+              },
+            ]}
             rowKey={"id"}
           />
         </div>
       </Space>
       <Drawer
-        title="Create a new Resturant"
+        title={editTenant ? "Edit Resturant" : "Create a new Resturant"}
         width={720}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          form.resetFields();
+          setEditTenant(null);
+          setOpen(false);
+        }}
         open={open}
         destroyOnClose={true}
         styles={{

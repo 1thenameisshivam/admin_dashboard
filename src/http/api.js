@@ -9,3 +9,5 @@ export const cerateUser = (userData) => api.post("/user", userData);
 export const createTenant = (tenantData) => api.post("/tenant", tenantData);
 export const updateUser = (userId, userData) =>
   api.patch(`/user/${userId}`, { ...userData });
+export const updateTenant = (tenantId, tenantData) =>
+  api.patch(`/tenant/${tenantId}`, { ...tenantData });
