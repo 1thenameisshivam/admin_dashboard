@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, Col, Form, Input, Row, Select, Space } from "antd";
 import { getTenant } from "../../../http/api";
+import { useWatch } from "antd/es/form/Form";
 
 // eslint-disable-next-line react/prop-types
 export const UserForm = ({ isEditMode = false }) => {
+  const selectedRole = useWatch("role");
   const { data: tenant } = useQuery({
     queryKey: ["tenant"],
     queryFn: () =>
@@ -101,37 +103,38 @@ export const UserForm = ({ isEditMode = false }) => {
                     placeholder="Select Role"
                   >
                     <Select.Option value="admin">Admin</Select.Option>
-                    <Select.Option value="customer">Customer</Select.Option>
                     <Select.Option value="manager">Manager</Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item
-                  label={"Tenant Id"}
-                  name={"tenantId"}
-                  rules={[
-                    {
-                      required: true,
-                      message: "Tenant is required",
-                    },
-                  ]}
-                >
-                  <Select
-                    size="large"
-                    onChange={() => {}}
-                    className="w-full"
-                    allowClear="true"
-                    placeholder="Select Resturant"
+              {selectedRole == "manager" && (
+                <Col span={12}>
+                  <Form.Item
+                    label={"Tenant Id"}
+                    name={"tenantId"}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Tenant is required",
+                      },
+                    ]}
                   >
-                    {tenant?.data.map((details) => (
-                      <Select.Option key={details.id} value={details.id}>
-                        {details.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
+                    <Select
+                      size="large"
+                      onChange={() => {}}
+                      className="w-full"
+                      allowClear="true"
+                      placeholder="Select Resturant"
+                    >
+                      {tenant?.data.map((details) => (
+                        <Select.Option key={details.id} value={details.id}>
+                          {details.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              )}
             </Row>
           </Card>
         </Space>
