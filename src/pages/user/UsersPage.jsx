@@ -21,11 +21,11 @@ import {
   theme,
 } from "antd";
 import { Link } from "react-router";
-import { cerateUser, getUsers } from "../../http/api";
+import { cerateUser, getUsers, updateUser } from "../../http/api";
 import { useAuthStore } from "../../store";
 import { Navigate } from "react-router";
 import { UserFilter } from "./UserFilter";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UserForm } from "./form/UserForm";
 import { debounce } from "lodash";
 
@@ -34,6 +34,7 @@ export const UsersPage = () => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formFilter] = Form.useForm();
+  const [editUser, setEditUser] = useState(null);
   const [queryParams, setQuserParams] = useState({
     perPage: 6,
     currentPage: 1,
@@ -41,6 +42,12 @@ export const UsersPage = () => {
     role: "",
   });
   const queryClient = useQueryClient();
+  useEffect(() => {
+    if (editUser) {
+      setOpen(true);
+      form.setFieldsValue({ ...editUser, tenantId: editUser.tenant?.id });
+    }
+  }, [editUser, form]);
   // eslint-disable-next-line no-unused-vars
   const { data, isFetching, isError, error } = useQuery({
     queryKey: ["users", queryParams],
@@ -59,6 +66,16 @@ export const UsersPage = () => {
       setOpen(false);
     },
   });
+  const { mutate: updateMutation } = useMutation({
+    mutationKey: ["update-user"],
+    mutationFn: (userId) => updateUser(userId, form.getFieldValue()),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      form.resetFields();
+      setOpen(false);
+    },
+  });
+
   const debouncedUpdate = useMemo(() => {
     return debounce((value) => {
       setQuserParams((prev) => ({ ...prev, q: value, currentPage: 1 }));
@@ -86,8 +103,15 @@ export const UsersPage = () => {
   } = theme.useToken();
 
   const onSubmitForm = async () => {
-    await form.validateFields();
-    mutate(form.getFieldValue());
+    const editMode = !!editUser;
+    if (editMode) {
+      updateMutation(editUser.id);
+    } else {
+      await form.validateFields();
+      mutate(form.getFieldValue());
+    }
+    setEditUser(null);
+    setOpen(false);
   };
   return (
     <>
@@ -132,15 +156,32 @@ export const UsersPage = () => {
               },
             }}
             dataSource={data?.data}
-            columns={columns}
+            columns={[
+              ...columns,
+              {
+                title: "Action",
+                key: "action",
+                render: (text, record) => (
+                  <Space size="middle">
+                    <Button onClick={() => setEditUser(record)} type="link">
+                      Edit
+                    </Button>
+                  </Space>
+                ),
+              },
+            ]}
             rowKey={"id"}
           />
         </div>
       </Space>
       <Drawer
-        title="Create a new user"
+        title={editUser ? "Edit user" : "Create a new user"}
         width={720}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setEditUser(null);
+          form.resetFields();
+          setOpen(false);
+        }}
         open={open}
         destroyOnClose={true}
         styles={{
@@ -159,7 +200,7 @@ export const UsersPage = () => {
         }
       >
         <Form form={form} layout="vertical">
-          <UserForm />
+          <UserForm isEditMode={!!editUser} />
         </Form>
       </Drawer>
     </>

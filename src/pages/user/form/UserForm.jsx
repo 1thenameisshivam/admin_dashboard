@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, Col, Form, Input, Row, Select, Space } from "antd";
 import { getTenant } from "../../../http/api";
 
-export const UserForm = () => {
+// eslint-disable-next-line react/prop-types
+export const UserForm = ({ isEditMode = false }) => {
   const { data: tenant } = useQuery({
     queryKey: ["tenant"],
     queryFn: () =>
@@ -58,24 +59,26 @@ export const UserForm = () => {
               </Col>
             </Row>
           </Card>
-          <Card title="Security Info">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  label="Password"
-                  name={"password"}
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input your password!",
-                    },
-                  ]}
-                >
-                  <Input.Password size="large" />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
+          {!isEditMode && (
+            <Card title="Security Info">
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Password"
+                    name={"password"}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input your password!",
+                      },
+                    ]}
+                  >
+                    <Input.Password size="large" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          )}
           <Card title="Role Info">
             <Row gutter={16}>
               <Col span={12}>
@@ -90,6 +93,7 @@ export const UserForm = () => {
                   ]}
                 >
                   <Select
+                    id="selectBox"
                     size="large"
                     onChange={() => {}}
                     className="w-full"
@@ -120,7 +124,7 @@ export const UserForm = () => {
                     allowClear="true"
                     placeholder="Select Resturant"
                   >
-                    {tenant?.map((details) => (
+                    {tenant?.data.map((details) => (
                       <Select.Option key={details.id} value={details.id}>
                         {details.name}
                       </Select.Option>
